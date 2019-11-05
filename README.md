@@ -1,2 +1,2 @@
-# credit_risk
-Análise de dados sócio-econômicos para concessão de crédito. 
+# houseprice
+Análise de dados para previsão de preços de casas 
