@@ -1,0 +1,413 @@
+---
+title: "Concessão de Crédito"
+subtitle: "Aprendizado de Máquina - Modelo de Classificação"
+author: "Sérgio Carvalho"
+date: "`r format(Sys.Date(), '%d %B, %Y')`"
+output:
+  rmdformats::readthedown:
+    self_contained: true
+    highlight: zenburn 
+    code_folding: show
+    style_body: justify
+    df_print: paged
+    number_sections: yes
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+editor_options: 
+    chunk_output_type: inline
+---
+
+
+```{css, echo = FALSE}
+div.sourceCode, pre.sourceCode{
+  color: #cccccc;
+  background-color: #303030;
+}
+
+body{text-align: justify;}
+```
+
+```{r options-chunk, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      eval = TRUE, 
+                      message = FALSE,
+                      warning = FALSE, 
+                      include = TRUE,
+                      fig.path = "figures/")
+```
+
+
+```{r pacotes-selecionados, message=FALSE, warning=FALSE, include=F}
+
+  suppressMessages(library(MASS))
+  suppressMessages(library(tidyverse))
+  suppressMessages(library(data.table))
+  suppressMessages(library(caret))
+  suppressMessages(library(ggplot2))
+  suppressMessages(library(kernlab))
+  suppressMessages(library(mlbench))
+  suppressMessages(library(MLmetrics))
+  suppressMessages(library(mlr))
+  suppressMessages(library(ROSE))
+  suppressMessages(library(e1071))
+  
+  suppressMessages(library(dplyr)) 
+  suppressMessages(library(DMwR))  
+  suppressMessages(library(purrr)) 
+  suppressMessages(library(pROC))  
+  suppressMessages(library(ROCR))
+  suppressMessages(library(Epi))
+  suppressMessages(library(InformationValue))
+  
+  suppressMessages(library(parallel))
+  suppressMessages(library(doParallel))
+
+```
+
+  
+
+```{r echo=FALSE}
+source('../funcoes.R')
+```
+
+# Objetivos
+
+  * Construir Modelos Preditivos.  
+  * Métricas de Performance
+    * Sensitivity
+    * Specificity
+    * Precision
+    * Recall
+    * F1 
+
+# Conjunto de dados
+
+```{r read-dataset, message=FALSE, warning=FALSE}
+df <- fread('../outputs/df_abt.csv', 
+                     sep=",", 
+                     showProgress = FALSE)[,-1] %>%
+                     data.frame(stringsAsFactors = T)
+```
+
+
+```{r echo = F}
+df[,lapply(df,'class')=='character'] = df[,lapply(df,'class')=='character'] %>% 
+                                                             lapply(factor) %>% 
+                                               data.frame(stringsAsFactors = T)
+
+df$Credit_History = as.factor(df$Credit_History)
+df$ApplicantIncome = as.numeric(df$ApplicantIncome)
+```
+
+
+```{r}
+head(df)
+```
+
+## Levels Vars
+
+```{r levels-vars-categorical}
+lapply(df[,lapply(df,class)=='factor'][,-1],levels)
+```
+
+
+```{r}
+lapply(df,class) %>% 
+          unlist %>% 
+           table
+```
+
+
+# Modelando Dados Desbalanceados Originais
+
+
+## Split no conjunto de dados
+
+```{r}
+set.seed(42)
+index <- createDataPartition(df$Loan_Status, p = 0.7, list = FALSE)
+
+train_data <- df[index, ]
+test_data  <- df[-index,]
+```
+
+
+## Save test_data
+
+O conjunto de dados test_data será usado quando formos fazer uma amplicação do modelo em produção.  
+
+```{r}
+saveRDS(test_data,'../outputs/test_data.rds')
+```
+
+
+## Proporções da variável resposta.
+
+
+```{r}
+prop.table(table(train_data$Loan_Status))
+```
+
+# __Logistic Regression__ __(glm)__
+
+Para modelar esses dados, será utilizado o algoritmo __Logistic Regression__ __(glm)__, pois com isso criamos um __baseline__
+das métricas que poderão futuramente serem melhoras. Os hiperparâmetros do modelo são ajustados usando a validação cruzada repetida no conjunto de treinamento, repetindo cinco vezes com dez dobras usadas em cada repetição. A AUC (área sob a curva) será utilizada para avaliar o classificador afim de evitar a necessidade de tomar decisões sobre o limite de classificação. 
+
+
+## Configurando os hiperparâmetros
+
+
+```{r}
+ctrl <- trainControl(method = "repeatedcv",
+                     number = 10,
+                     repeats = 5,
+                     preProcOptions = c("center","scale"),
+                     summaryFunction = twoClassSummary,
+                     classProbs = TRUE,
+                     allowParallel = T)
+```
+
+
+## Primeiro Modelo
+
+Aqui estou construindo um modelo com dados brutos, sem qualquer processo de amostragem.
+
+```{r set-vars}
+vars = c('Loan_Status','Married','Education','LoanAmount','Credit_History','Property_Area')
+```
+
+
+```{r message=FALSE, warning=FALSE}
+set.seed(5627)
+
+cl = start.cluster()
+
+glm.orig <- caret::train(Loan_Status ~ .,
+                         data = train_data[,vars],
+                         tuneLength = 5,
+                         method = "glm",
+                         family="binomial",
+                         metric = "ROC",
+                         trControl = ctrl)
+
+stop.Cluster(cl)
+
+saveRDS(glm.orig,'../outputs/glm.orig.rds')
+```
+
+
+## Ponderando a Variável Resposta   
+
+Atribuindo pesos as proporções da variável resposta. 
+
+```{r}
+model_weights <- ifelse(train_data$Loan_Status == "Y",
+                        (1/table(train_data$Loan_Status)[1]) * 0.5,
+                        (1/table(train_data$Loan_Status)[2]) * 0.5)
+```
+
+usando a mesma semente em todos os modelos para garantir as mesmas divisões de validação cruzada.
+
+```{r}
+ctrl$seeds <- glm.orig$control$seeds
+```
+
+## Modelo Ponderado
+
+```{r}
+cl = start.cluster()
+
+glm.weighted <- caret::train(Loan_Status ~ .,
+                             data = train_data[,vars],
+                             tuneLength = 5,
+                             method = "glm",
+                             family="binomial",
+                             weights = model_weights,
+                             metric = "ROC",
+                             trControl = ctrl)
+
+stop.Cluster(cl)
+saveRDS(glm.orig,'../outputs/glm.weighted.rds')
+```
+
+
+## Modelo down-sampled 
+
+```{r}
+ctrl$sampling <- "down"
+```
+
+```{r}
+cl = start.cluster()
+
+glm.down <- caret::train(Loan_Status ~ .,
+                         data = train_data[,vars],
+                         tuneLength = 5,
+                         method = "glm",
+                         family="binomial",
+                         metric = "ROC",
+                         trControl = ctrl)
+
+saveRDS(glm.orig,'../outputs/glm.down.rds')
+stop.Cluster(cl)
+```
+
+## Modelo up-sampled 
+
+```{r}
+ctrl$sampling <- "up"
+```
+
+```{r}
+cl = start.cluster()
+
+glm.up <- caret::train(Loan_Status ~ .,
+                       data = train_data[,vars],
+                       tuneLength = 5,
+                       method = "glm",
+                       family="binomial",
+                       metric = "ROC",
+                       trControl = ctrl)
+
+saveRDS(glm.orig,'../outputs/glm.up.rds')
+stop.Cluster(cl)
+```
+
+
+## Modelo Smote 
+
+```{r}
+ctrl$sampling <- "smote"
+```
+
+```{r}
+cl = start.cluster()
+
+glm.smote <- caret::train(Loan_Status ~ .,
+                           data = train_data[,vars],
+                           tuneLength = 5,
+                           method = "glm",
+                           family="binomial",
+                           metric = "ROC",
+                           trControl = ctrl)
+
+saveRDS(glm.orig,'../outputs/glm.smote.rds')
+stop.Cluster(cl)
+```
+
+
+# Resultados para o conjunto de testes
+
+```{r message=FALSE,warning=FALSE}
+model_list <- list(glm.original = glm.orig,
+                   glm.weighted = glm.weighted,
+                   glm.down = glm.down,
+                   glm.up = glm.up,
+                   glm.smote = glm.smote)
+
+model_list_roc <- model_list %>%
+                    map(test_roc, data = test_data,'Loan_Status')
+
+model_list_roc %>% map(auc)
+```
+
+Veja que a AUC calculada no conjunto de testes mostra uma clara distinção entre a implementação do modelo original e as que incorporaram uma técnica de ponderação ou amostragem, o modelo up-sampled  possuía o maior valor de AUC.
+
+
+# Obtendo as Predições
+
+
+```{r}
+pred.glm.orig <- predict(glm.orig, newdata = test_data[,vars])
+pred.glm.weighted <- predict(glm.weighted, newdata = test_data[,vars])
+pred.glm.down <- predict(glm.down, newdata = test_data[,vars])
+pred.glm.up <- predict(glm.up, newdata = test_data[,vars])
+pred.glm.smote <- predict(glm.smote, newdata = test_data[,vars])
+```
+
+
+# Obtendo a Matrix de Confusão
+
+```{r }
+cm_glm.original <- caret::confusionMatrix(pred.glm.orig, test_data$Loan_Status,positive = "Y")
+cm_glm.weighted <- caret::confusionMatrix(pred.glm.weighted, test_data$Loan_Status,positive = "Y")
+cm_glm.down     <- caret::confusionMatrix(pred.glm.down, test_data$Loan_Status,positive = "Y")
+cm_glm.up       <- caret::confusionMatrix(pred.glm.up, test_data$Loan_Status,positive = "Y")
+cm_glm.smote    <- caret::confusionMatrix(pred.glm.smote, test_data$Loan_Status,positive = "Y")
+```
+
+
+# Plotando a curva ROC do modelos 
+
+
+```{r}
+results_list_roc <- list(NA)
+num_mod <- 1
+
+for(the_roc in model_list_roc){
+  
+  results_list_roc[[num_mod]] = data_frame(tpr = the_roc$sensitivities,
+                                           fpr = 1 - the_roc$specificities,
+                                         model = names(model_list)[num_mod])
+  
+  num_mod <- num_mod + 1
+  
+}
+```
+
+
+
+```{r}
+results_df_roc <- bind_rows(results_list_roc)
+```
+
+
+
+```{r fig.width=18, fig.height=6}
+custom_col <- c("#000000", "#009E73", "#0072B2", "#D55E00", "#CC79A7","#CC29E67")
+
+ggplot(aes(x = fpr,  y = tpr, group = model), data = results_df_roc) +
+  geom_line(aes(color = model), size = 1) +
+  scale_color_manual(values = custom_col) +
+  geom_abline(intercept = 0, slope = 1, color = "gray", size = 1) +
+  theme_bw(base_size = 18)
+```
+
+
+# Comparando os Resultados
+
+Agora vamos comparar as previsões de todos esses modelos:
+
+
+```{r}
+comparison <- data.frame(model = names(model_list),
+                         Sensitivity = rep(NA, length(model_list)),
+                         Specificity = rep(NA, length(model_list)),
+                         Precision = rep(NA, length(model_list)),
+                         Recall = rep(NA, length(model_list)),
+                         F1 = rep(NA, length(model_list)))
+```
+
+
+
+
+```{r}
+for(name in names(model_list)){
+  
+  model <- get(paste0("cm_",name))
+
+  comparison[comparison$model == name,'Sensitivity'] <- model[[4]]['Sensitivity']
+  comparison[comparison$model == name,'Specificity'] <- model[[4]]["Specificity"]
+  comparison[comparison$model == name,'Precision'] <- model[[4]]["Precision"]
+  comparison[comparison$model == name,'Recall'] <- model[[4]]["Recall"]
+  comparison[comparison$model == name,'F1'] <- model[[4]]["F1"]      
+}
+
+comparison %>% arrange(desc(Sensitivity))
+```
+
+> Na tabela acima estão dispostos os resultados do modelos preditivos através de suas métricas. Vale observar o fato de que em todos os modelos os valores referêntes a métrica Sensitivity indicam que as previsões realizadas para a classe positiva Y da variável resposta Loan_Status possuem boa assertividade, ou seja, considerando as características socio-econõmicas do clientes conseguimos prever se o cliente é um bom pagador dado que ele é um bom pagador com boa assertividade.      
+
+
+

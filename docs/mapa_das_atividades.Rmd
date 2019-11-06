@@ -1,0 +1,140 @@
+---
+title: "Concessão de Crédito"
+author: "Sérgio Carvalho"
+date: "`r format(Sys.Date(), '%d %B, %Y')`"
+output:
+  rmdformats::readthedown:
+    self_contained: true
+    highlight: zenburn 
+    code_folding: show
+    style_body: justify
+    df_print: paged
+    number_sections: yes
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+editor_options: 
+    chunk_output_type: inline
+---
+
+
+```{css, echo = FALSE}
+div.sourceCode, pre.sourceCode{
+  color: #cccccc;
+  background-color: #303030;
+}
+
+body{text-align: justify;}
+```
+
+```{r echo=FALSE}
+# "default", "tango", "pygments", "kate", "monochrome", 
+# "espresso", "zenburn", "haddock", and "textmate
+```
+
+```{r options-chunk, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      eval = TRUE, 
+                      message = FALSE,
+                      warning = FALSE, 
+                      include = TRUE,
+                      fig.path = "figures/")
+```
+
+```{r pacotes-selecionados, message=FALSE, warning=FALSE, include=F}
+
+  suppressMessages(library(MASS))
+  suppressMessages(library(tidyverse))
+  suppressMessages(library(readr))
+  suppressMessages(library(dplyr))
+  suppressMessages(library(data.table))
+  suppressMessages(library(readxl))
+
+```
+
+# Reunião de Alinhamento  
+
+## Participantes
+
+* [Lídia Camargo](https://www.linkedin.com/in/lidia-camargo-78a6265a/) 
+* [Sérgio Carvalho](https://sergiocarvalho-estatistico.github.io/)
+
+
+# Introdução
+
+Nesse desafio, você irá construir uma aplicação que apoie a decisão de um concessor de crédito! 
+
+## Objetivo do Projeto
+
+* Prever se o cliente irá ou não pagamento da dívida 
+  * Loan_Status: Se o empréstimo foi quitado ou não
+
+* Em caso positivo, qual a quantidade ideal para emprestar?
+  * LoanAmount: Quantidade do empréstimo (em milhares)
+
+# Base de dados 
+
+```{r read-dftrain}
+df <- data.table::fread('../dados/dataset.csv', 
+                             sep=",", 
+                             showProgress = FALSE)  %>% 
+            data.frame(stringsAsFactors = F)
+df
+```
+
+```{r}
+str(df[,vars])
+```
+
+
+
+## Dicionário de dados
+
+* Loan_ID: Id único
+* Gender: gênero
+* Married: casado ou não casado
+* Dependents: quantidade de dependentes
+* Education: grau de escolaridade
+* Self_Employed: se a pessoa é autônoma
+* ApplicationIncome: Renda
+* CoapplicationIncome: Renda familiar
+* Loan Amount: Quantidade do empréstimo (em milhares)
+* Loan_Amount_Term: Tempo para quitação da dívida (em dias)
+* Credit_History: Se a pessoa possui empréstimos passados
+* Property_Area: Se a pessoa mora em zona rural ou urbana
+* Loan_Status: Se o empréstimo foi quitado ou não
+
+Note que as colunas target são LOAN_AMOUNT e LOAN_STATUS
+
+
+# O que é esperado
+
+* Ciência de dados:
+  * Análise exploratória dos dados
+  * Pré processamento
+  * Geração e validação dos modelos
+
+É recomendado a disponibilização de todo o processo em um notebook do Jupyter.
+
+# Aplicação
+
+Após a geração dos modelos, você deverá realizar as seguinte atividades:
+
+* Serialização dos modelos gerados
+* Criação de uma API que tenha como input as features de entrada utilizadas para geração do modelo, e tenha como saída as respostas dos modelos
+* As saídas das respostas de API deverão ser salvas em um banco de dados MongoDB
+* Criação de um Dockerfile para conteinerização da API gerada
+
+# Observações
+
+* Todos os códigos deverão ser disponibilizados via GitHub. 
+* É interessante a escrita de um README com instruções de utilização dos códigos.
+
+# Bonus 
+A base de dados pode conter um sério problema. Na sua opinião, qual seria? - Escreva a resposta no README do github.
+
+# Conclusão
+Não estamos esperando os melhores modelos de aprendizado de máquina! O que será mais avaliado é o raciocínio seguido na construção dos modelos e a capacidade de colocá-los em produção.
+
+
+

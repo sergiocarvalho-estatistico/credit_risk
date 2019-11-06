@@ -1,0 +1,294 @@
+---
+title: "Concessão de Crédito"
+subtitle: "Aprendizado de Máquina - Modelo de Regressão"
+author: "Sérgio Carvalho"
+date: "`r format(Sys.Date(), '%d %B, %Y')`"
+output:
+  rmdformats::readthedown:
+    self_contained: true
+    highlight: zenburn 
+    code_folding: show
+    style_body: justify
+    df_print: paged
+    number_sections: yes
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+editor_options: 
+    chunk_output_type: inline
+---
+
+
+```{css, echo = FALSE}
+div.sourceCode, pre.sourceCode{
+  color: #cccccc;
+  background-color: #303030;
+}
+
+body{text-align: justify;}
+```
+
+
+```{r echo=FALSE}
+# "default", "tango", "pygments", "kate", "monochrome", 
+# "espresso", "zenburn", "haddock", and "textmate
+```
+
+
+```{r options-chunk, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      eval = TRUE, 
+                      message = FALSE,
+                      warning = FALSE, 
+                      include = TRUE,
+                      fig.path = "figures/")
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, include=F}
+source('../funcoes.R')
+source('../pacotes.R')
+```
+
+
+# Objetivos
+
+  * Construir Modelo Preditivo que seja capaz de prever a quantidade de um determinado valor a ser emprestado ao cliente dado que ele tem boas chances de ser um bom pagador. 
+  
+  * Quais Modelos utilizar ? 
+  * Modelos no Radar
+      * Modelos Lineares Generalizados
+      * Modelos de Machine Learning
+      
+  * Métricas de Performance
+  * * RMSE
+  
+
+# Conjunto de dados
+
+
+```{r read-dataset, message=FALSE, warning=FALSE}
+df <- fread('../outputs/df_abt.csv', 
+                     sep=",", 
+                     showProgress = FALSE)[,-1] %>%
+                     data.frame(stringsAsFactors = T)
+```
+
+
+
+```{r echo = F}
+df[,lapply(df,'class')=='character'] = df[,lapply(df,'class')=='character'] %>% 
+                                                             lapply(factor) %>% 
+                                               data.frame(stringsAsFactors = T)
+
+df$Credit_History = as.factor(df$Credit_History)
+df$ApplicantIncome = as.numeric(df$ApplicantIncome)
+```
+
+
+```{r}
+head(df)
+```
+
+
+# Ajustando um modelo aos dados
+
+Como a distribuição da variável LoanAmount é assimétrica com cauda a direita, podemos utilizar um MLG, modelos linerares generalizados, em particular a distribuição Gamma. 
+
+Ainda é importante lembrar que dentro do contexto de negócio o processo de seleção de variáveis conta com o apoio dos especialistas da área, o que ajuda bastante, porém as vezes por questões intrínsecas do negócio uma variável que é rejeitada por algum método de seleção acaba permanecendo no modelo. 
+
+## Split no conjunto de dados
+
+```{r}
+set.seed(42)
+index <- createDataPartition(df$LoanAmount, p = 0.7, list = FALSE)
+
+df.train <- df[index, ]
+df.test  <- df[-index,]
+```
+
+
+```{r echo=F}
+df.test[1,c('Property_Area',
+            'Credit_History', 
+            'LoanAmount',
+            'Loan_Amount_Term',
+            'CoapplicantIncome',
+            'ApplicantIncome',
+            'Education','Married')] 
+```
+
+
+# Matrix de Correlação 
+
+```{r}
+cor(df[,unlist(lapply(df,class)=='numeric')])
+```
+
+
+
+```{r ajutando-com-a-distribuição-gamma-mgl}
+set.seed(548)
+fit.model = glm(LoanAmount ~ Married + Education + ApplicantIncome + 
+                             CoapplicantIncome + Loan_Amount_Term + 
+                             Property_Area + Loan_Status,
+                             data = df.train[,-1],family = Gamma(link = "log"))
+
+summary(fit.model)
+```
+
+
+## Teste Qui-Quadrado
+
+```{r test-qui-quadrado}
+round(1-pchisq(59.318,422, ncp = 0, lower.tail = T, log.p = F),4)
+```
+
+O desvio do modelo foi de D($y$;$\hat{\mu}$) = 59.318, com 422 graus de liberdade, que leva a P = 1,00 e indica um ajuste adequado.
+
+
+## Predição 
+
+```{r predict}
+predicao <- exp(predict(fit.model,df.test))
+```
+
+## Plot Ecdf
+
+Como não temos os valores da variável __LoanAmount__ no conjunto de dados de teste, podemos apenas verificar se a distribuição dos dados preditos esta de acordo com a distribuição dos dados reais da variável LoanAmount do conjunto de dados de treino. A da distribuição impírica acumulada dos dados pode nos ajudar com isso. 
+
+```{r plot-ecdf, fig.width=15,fig.height=6}
+latticeExtra::ecdfplot(~ df$LoanAmount + predicao, 
+                         auto.key=list(space='bottom',col = c('red','blue')), 
+                         col = c('red','blue'), 
+                         lwd = c(2,3), 
+                         xlab =" ",ylab = 'F(x)',
+                         main = 'Distribuição Empírica Acumulada')
+```
+
+Observe que há concordância entre os valores preditos e reais da variável __LoanAmount__. Uma outra forma de verificar essa condordância é plotar as distribuições de densidade e frequência, como fiz abaixo. 
+
+
+```{r data-frame-predict}
+predicao <- data.frame('predicao' = predicao)
+```
+
+```{r densidades, fig.width=15, fig.height=6, message=FALSE,warning=FALSE}
+p1 <- ggpubr::ggdensity(predicao, x = "predicao", 
+              fill = "#0073C2FF", color = "black",
+              add = "mean", rug = TRUE) +
+              xlim(xlim = c(0,700)) +
+              #ylim(ylim = c(0,0.02)) +    
+              labs(title = 'Distribuição da densidade das predições') +
+              theme_dark()
+
+p2 <- ggpubr::ggdensity(fit.model$data, x = "LoanAmount", 
+              fill = "lightyellow", color = "black",
+              add = "mean", rug = TRUE) +
+              #ylim(ylim = c(0,0.015)) + #xscale("log2", .format = TRUE)
+              labs(title = 'Distribuição da densidade da variável LoanAmount') +
+              theme_dark()
+
+gridExtra::grid.arrange(p1,p2,nrow = 1)
+```
+
+
+Embora as distribuições estejam muito parecidas, os gráficos acima nos permite visualizar que os valores preditos assume uma variabilidade um pouco maior a partir do valor médio da distribuição. 
+
+
+```{r histogramas, fig.height=6, fig.width=15, message=FALSE, warning=FALSE}
+p3 <- ggplot(predicao, aes(x = predicao)) + 
+      geom_histogram(bins = 100, 
+                     color = "black", 
+                     fill = "#0073C2FF") +
+      xlim(xlim = c(0,700) ) +
+#      ylim(ylim = c(0,100)) +
+      labs(title = 'Distribuição de frequência das predições') +
+      theme_dark()
+
+p4 <- ggplot(fit.model$data, aes(x = LoanAmount)) + 
+      geom_histogram(bins = 100, 
+                     color = "black", 
+                     fill = "lightyellow") +
+ #     xlim(xlim = c(0,max(fit.model$LoanAmount))) +
+ #     ylim(ylim = c(0,100)) +
+      labs(title = 'Distribuição de frequência da variável LoanAmount') +
+      theme_dark() 
+
+
+gridExtra::grid.arrange(p3,p4,nrow = 1)
+```
+
+Observe que de certa forma o conseguimos estimar o comportamento da distribuição da variável LoanAmount.       
+
+
+# Métricas de Performance   
+
+
+## Rsquare
+
+```{r r-square}
+rss <- sum((fit.model$residuals)^2)  ## soma dos quadrados dos resíduos 
+tss <- sum((fit.model$y - mean(fit.model$y))^2)  ## soma total dos quadrados
+(r.square <- 1-rss/tss)
+```
+
+Este é um bom resultado para uma primeira iteração, o modelo consegue explicar cerca de 99% da variabilidade dos dados.
+
+
+## RMSE
+
+```{r rmse}
+sqrt(mean((fit.model$residuals)^2))
+```
+
+Com esse RMSE somente o kaggle me dirá se está bom ou não.
+
+
+# Diagnósticos
+
+```{r anova}
+car::Anova(fit.model)
+```
+
+Este resultado da Anova nos mostra que com excessão da variável __Loan_Status__ todas as outras são importantes para explicar o comportamento da variável __LoanAmount__.
+
+
+## Do Modelo
+
+```{r fig.width=18,fig.height=8, message=FALSE,warning=FALSE}
+car::residualPlots(fit.model)
+```
+
+
+## Resíduos
+
+
+```{r fig.width=18,fig.height=8, message=FALSE,warning=FALSE}
+par(mfrow=c(1,2))
+y = fit.model$residuals
+mean.y <- mean(y)
+sd.y <- sd(y)
+hist(y, probability=T, breaks = 60)
+y.range <- seq(floor(min(y)), ceiling(max(y)), 0.05)
+x <- dnorm(y.range, mean=mean.y, sd=sd.y)
+lines(y.range, x, col="red")
+car::qqPlot(y)
+```
+
+
+# Conclusão
+
+Como os resíduos estão bem distribuídos em torno de zero podemos considerar que nosso ajuste está razoável para uma primeira iteração de análises. Além disso é interessante notar que os resíduos que estão muito acima de zero podem ser os casos em que o valor do empréstimo concedido ao cliente está acima da sua capacidade de pagamento o que implicando em um aumento do risco de retorno dos valores, logo, da inadimplência. 
+  
+Já os valores dos resíduos que estão abaixo de zero significa que o valor concedido ao cliente está dentro das suas possibilidades de pagamento da dívida adiquirida, o que necessariamento reduz o risco de inadimplência.  
+
+## Exportando o Modelo
+
+```{r}
+saveRDS(fit.model,'../outputs/regression_model.rds')
+```
+
+
+
+
+

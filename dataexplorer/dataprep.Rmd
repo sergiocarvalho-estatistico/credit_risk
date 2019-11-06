@@ -1,0 +1,521 @@
+---
+title: "Concessão de Crédito"
+sutitle: "Preparando o Conjunto de dados"
+author: "Sérgio Carvalho"
+date: "`r format(Sys.Date(), '%d %B, %Y')`"
+output:
+  rmdformats::readthedown:
+    self_contained: true
+    highlight: zenburn 
+    code_folding: show
+    style_body: justify
+    df_print: paged
+    number_sections: yes
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+editor_options: 
+    chunk_output_type: inline
+---
+
+
+```{css, echo = FALSE}
+div.sourceCode, pre.sourceCode{
+  color: #cccccc;
+  background-color: #303030;
+}
+
+body{text-align: justify;}
+```
+
+```{r echo=FALSE}
+# "default", "tango", "pygments", "kate", "monochrome", 
+# "espresso", "zenburn", "haddock", and "textmate
+```
+
+
+```{r options-chunk, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      eval = TRUE, 
+                      message = FALSE,
+                      warning = FALSE, 
+                      include = TRUE,
+                      fig.path = "figures/",
+                      fig.width = 15, 
+                      fig.height = 6)
+```
+
+
+```{r pacotes-selecionados, message=FALSE, warning=FALSE, include=F}
+
+  suppressMessages(library(MASS))
+  suppressMessages(library(tidyverse))
+  suppressMessages(library(readr))
+  suppressMessages(library(dplyr))
+  suppressMessages(library(data.table))
+  suppressMessages(library(readxl))
+  suppressMessages(library(ggplot2))
+  suppressMessages(library(plotly))
+  suppressMessages(library(scales))
+  suppressMessages(library(lubridate))
+  suppressMessages(library(reshape)) 
+  suppressMessages(library(Boruta))
+  suppressMessages(library(caret))
+  suppressMessages(library(skimr))
+  suppressMessages(library(RANN))
+  suppressMessages(library(ggpubr))
+  suppressMessages(library(corrplot)) 
+  suppressMessages(library(lattice))
+  suppressMessages(library(latticeExtra))
+
+```
+
+
+```{r echo=FALSE}
+source('../funcoes.R')
+```
+
+
+# Objetivos
+
+  * Tipo de variáveis
+      * * Inteiras ou discretas: 
+      * * Numéricas ou double
+      * * Categóricas
+      * * Qualitativas
+      * Qualidade dos dados          
+      * * Quantidade de NA's por variável
+  * Criação de novas variáveis, se precisar
+  * Transformação das variáveis, se precisar
+
+# Conjunto de Dados de Teste
+
+
+```{r read-data-test}
+df <- data.table::fread('../dados/dataset.csv', 
+                             sep=",", 
+                             showProgress = FALSE)  %>% 
+            data.frame(stringsAsFactors = F)
+```
+
+## Visualizando os dados
+
+```{r}
+df %>% head()
+```
+
+## Qualidade do dados
+
+```{r}
+apply(df,2,function(x) sum(as.numeric(x=="")))
+```
+
+Observe que as variáveis Gender, Married, Dependents e Self_Employed possuem valores não declarados. Para esses valores irei criar a categoria __vnd__ (valor não declarado). 
+
+```{r}
+df$Gender[df$Gender == ""] = 'vnd'
+df$Married[df$Married == ""] = 'vnd'
+df$Dependents[df$Dependents == ""] = 'vnd'
+df$Self_Employed[df$Self_Employed == ""] = 'vnd'
+```
+
+
+
+# Características do Dados
+
+```{r}
+str(df)
+```
+
+Há em nosso conjunto de dados 614 linhas e 13 colunas com 3 tipos de dados:
+
+* Character (chr)
+* Integer (int)
+* Numéric (num)
+
+## Dados Duplicados
+
+Será que há dados duplicatos em nosso dataframe? 
+
+```{r remove-rows-duplicate}
+df %>% distinct(Loan_ID, .keep_all = TRUE)
+```
+
+Não há linhas duplicatas em nosso conjunto de dados.
+
+# Distribuição das Variáveis Respostas
+
+## Variável Loan_Status
+
+Qual a proporção de clientes que pagaram (Y) ou não pagaram (N) os empréstimos?
+
+```{r fig.width=18, fig.height=5}
+df %>% 
+  select(Loan_Status) %>% 
+  table %>% 
+  prop.table() %>% 
+  barplot(beside= T,
+          main = 'Proporções da Classes N e Y',
+          xlab = 'Proporções',
+          ylab = 'classes',
+          col = c('red','lightblue'),
+          horiz = T,
+          las = 2,
+          xlim = c(0,1), 
+          legend.text = c(0.31,0.69))  
+```
+
+Observe que embora as proporções das classes N e Y não estão em perfeito equilíbrio $50\%/50\%$ não há também um desbalanceamento crítico do tipo $90\%/10\%$ ou até $99\%/1\%$ e este fato pode nos ajudar em relação a atingir uma boa performance do modelo.  
+
+## Variável LoanAmount
+
+```{r distr-target,fig.width=18,fig.height=6}
+p0 <- ggdensity(df, x = 'LoanAmount', 
+          fill = "#0073C2FF", color = "black",
+          add = "mean", rug = TRUE) +
+          labs(title = 'Distribuição da densidade da variável LoanAmount') +
+          theme_dark()
+
+p1 <- ggplot(df, aes(x = LoanAmount)) + 
+      geom_histogram(bins = 80, 
+                     color = "black", 
+                     fill = "#0073C2FF") +
+      labs(title = 'Distribuição de frequência da variável LoanAmount') +
+      theme_dark() 
+
+
+gridExtra::grid.arrange(p0,p1,nrow = 1)
+```
+
+## Variáreis do Tipo String
+
+Irei converter as variáveis do tipo string para o tipo categórico.
+
+```{r type-str}
+df[,unlist(lapply(df,is.character))] = df[,unlist(lapply(df,is.character))] %>%
+                                                         apply(2,as.factor) %>% 
+                                                         data.frame()
+df %>% head()
+```
+
+## Resumo das Informações 
+
+```{r resumo-dos-dados}
+skim_to_wide(df)
+```
+
+Notem que há valores missing presente nas seguintes variáveis:
+
+<center>
+
+|       Variável     |   Tipo   |   Qtde Missing  |
+|:------------------:|:--------:|:---------------:|
+|  Credit_History    | Integer  |      50         |
+|  Loan_Amount_Term  | Integer  |      14         |
+|  LoanAmount  	     | Integer  |      22	        |   	
+
+</center>
+
+Irei observar cada uma dessas variáveis e a sua relação com a variável resposta.
+
+
+# Análise da distribuição para os Valores Missing
+
+Queremos observar aqui qual o comportamento da variável resposta considerando os valores missing das variáveis explicativas.
+
+## Variável Credit_History
+
+Vejam que interessante, a variável __Credit_History__ tem a característíca de uma variável categórico, no entanto, o seu tipo de dados é integer. 
+
+```{r}
+count(df,Credit_History)
+```
+
+Exatamente como havia pensado! Ela possui apenas dois valores 0 e 1 e dessa forma podemos transforma-la em uma variável categórica sem perda de informção.   
+
+```{r convert-int-to-categorical}
+df$Credit_History = as.factor(df$Credit_History)
+```
+
+Observe que agora variável é do tipo categórico (factor). 
+
+```{r}
+df %>% head()
+```
+
+
+## Variável Credit_History vs Loan_Status
+
+Como se comporta a variável resposta __Loan_Status__ para os valores missing da variável __Credit_History__?
+
+```{r var-missing-credit-history-Loan_Status}
+df[is.na(df$Credit_History),] %>% 
+          select(Loan_Status) %>% 
+                        table %>% 
+                     prop.table()
+```
+
+Sabemos que a proporção original das categorias da variável resposta é de 31% para N e de 69% para Y, considerando este fato e observando que os valores ausentes na variável __Credit_History__ se aproximam dessa distribuição, temos que, os valores ausentes na __Credit_History__ aparentemente não alteram a distribuição da variável resposta.     
+
+## Variável Credit_History vs LoanAmount
+
+Qual será distribuição da variável __LoanAmount__ considerando os valores missing da variável __Credit_History__?
+
+```{r summary-LoanAmount-by-missing-credit-history}
+rbind("df" = summary(df$LoanAmount),
+      "df.missing" = summary(df[is.na(df$Credit_History),'LoanAmount'])) %>% data.frame()
+```
+
+Os valores para a medida de posição mediana sugere que a distribuição da variável __LoanAmount__ é pouco alterada para os valores missing da variável __Credit_History__. 
+
+## Variável Loan_Amount_Term vs Loan_Status
+
+Qual será a distribuição da variável __Loan_Status__ considerando os valores missing da variável __Loan_Amount_Term__?
+
+```{r var-missing-loan-amount-term-Loan_Status}
+df[is.na(df$Loan_Amount_Term),] %>% 
+            select(Loan_Status) %>% 
+                          table %>% 
+                      prop.table()
+```
+
+Note que para os valores missing da variável __Loan_Amount_Term__ a variável __Loan_Status__ tem suas proporções alteradas.
+
+## Variável Loan_Amount_Term vs LoanAmount
+
+Qual será distribuição da variável __LoanAmount__ considerando os valores missing da variável __Loan_Amount_Term__?
+
+```{r summary-LoanAmount-by-missing-loan-amount-term}
+rbind("df" = summary(df$LoanAmount),
+      "Loan_Amount_Term_Missing" = summary(df[is.na(df$Loan_Amount_Term),'LoanAmount'])) %>% data.frame()
+```
+
+Novamente temos que os valores missing da variável __Loan_Amount_Term__ alteram as características da distribuição da variável __LoanAmount__.
+
+## A Variável LoanAmount vs Loan_Status
+
+Distribuição da variável __Loan_Status__ considerando os valores missing da variável __LoanAmount__.
+
+```{r var-missing-loan-amount-loan_Status}
+df[is.na(df$LoanAmount),] %>% 
+            select(Loan_Status) %>% 
+                          table %>% 
+                      prop.table()
+``` 
+
+Os valores missing da variável __LoanAmount__ alteraram as proporções das classes N e Y da variável __Loan_Status__.
+
+
+# Resolvendo os valores Missing
+
+Para construir um modelo que impute valores nas variáveis com valores missing vamos retirar todas as variáveis que possuem alguma porcentagem de valores nulos e deixar no data frame somente uma delas em cada modelo. 
+
+## Criando os data frames
+
+Retirando as variáveis __Loan_Amount_Term__ e __LoanAmount__.
+
+```{r df-credit-history}
+df.Credit_History <- df %>% select(-Loan_Amount_Term,-LoanAmount)
+```
+
+Retirando as variáveis __Credit_History__ e __LoanAmount__.
+
+```{r df-loan-amount-term}
+df.Loan_Amount_Term <- df %>% select(-Credit_History,-LoanAmount)
+```
+
+Retirando as variáveis __Credit_History__ e __Loan_Amount_Term__.
+
+```{r df-loan-amount}
+df.LoanAmount <- df %>% select(-Credit_History,-Loan_Amount_Term)
+```
+
+
+Criando um vetor com o nome das variáveis e uma lista com os dataframes criados.
+
+```{r varsnames-df-list}
+vars <- c('Loan_Amount_Term','Credit_History','LoanAmount')
+
+list.df <- list(df.Loan_Amount_Term,
+                df.Credit_History,
+                df.LoanAmount)
+```
+
+A função abaixo automatiza o processo de impute de dados nos valores missing de cada variável.
+
+```{r funcao-impute}
+f.pred <- function(fac,df.var,rf.model,var){ 
+
+  new.df <- df.var[is.na(df.var[,var]),!(names(df.var) %in% var)]
+  pred_rf <- predict(rf.model, newdata =  new.df)
+  fac[is.na(fac[,var]),var] <- pred_rf
+
+  return(fac)
+}
+```
+
+## Usando a Caret e RandomForest
+
+Utilizarei o random forest para o processo de regressão e classifição de imputs dos dados faltantes.
+
+```{r - fitcontrol-regression}
+set.seed(12345)
+
+# Para usar no modelo de Imput by Regression
+fitControl_a <- trainControl(method="cv", 
+                           number=5, 
+                           savePredictions = 'final')
+
+# Para usar no modelo de Imput by classfication
+fitControl_b <- trainControl(method="cv", 
+                           number=5, 
+                           savePredictions = 'final',
+                           classProbs= F, 
+                           summaryFunction = multiClassSummary)
+```
+
+Imputando valores não nulos para em cada variável.
+
+```{r rf-model, message=FALSE, warning=FALSE}
+dfa = df
+set.seed(12345)
+
+# Crio uma lista para armazenar os modelos
+rf.list <- list()
+j <- 1
+for(j in 1:length(vars)){ 
+
+ # atribuo em df um df."variavel" sem os valor nulos       
+ dfx <- list.df[[j]] %>% na.omit()  
+
+ # train model regressin with random-forest 
+ if( vars[j] %in% vars[c(1,3)] ){
+   
+     rf.list[[j]] <- train(eval(parse(text = paste(vars[j],'~.'))),
+                                                    data = dfx[,-1], 
+                                                    tuneLength=5,
+                                                    trControl = fitControl_a,
+                                                    method='rf')
+ }
+
+
+  # train model classification with random-forest 
+ if( vars[j] %in% vars[2] ){
+   
+     rf.list[[j]] <- train(eval(parse(text = paste(vars[j],'~.'))),
+                                                    data = dfx[,-1], 
+                                                    tuneLength=5,
+                                                    trControl = fitControl_b,
+                                                    method='rf')
+ } 
+ # imputo as categorias faltantes no valores nulos das variáveis
+ dfa <- f.pred(dfa,list.df[[j]],rf.list[[j]],vars[j])
+ 
+ cat(j,' - ')
+ 
+}
+```
+
+Será que há ainda algum valor nulo no conjunto de dados?
+
+```{r values-nulos, fig.width=15, fig.height=7}
+anyNA(dfa)
+```
+
+Imputs realizados com sucesso!
+
+# Comparando Distribuições
+
+E como será que ficou a distribuição das variáveis após o imput? 
+
+Conjunto de dados originais
+
+```{r antes-do-imput}
+summary(df[,vars])
+```
+
+Conjunto de dados após os Imputs.
+
+```{r apos-do-imput}
+summary(dfa[,vars])
+```
+
+## Analytic Base Table (ABT)
+
+```{r}
+df = dfa
+```
+
+# Importância das Variáveis
+
+Será que os dados que possuem valores nulos tem importância em relação as variáveis respostas Loan_Status e LoanAmount?
+ 
+```{r vars-importance-loan-status,fig.width=18,fig.height=7}
+importance.vars(df[,-1],'Loan_Status')
+```
+
+Segundo o gráfico acima as variáveis de maior importância para explicar a variável __Loan_Status__, são:
+
+* ApplicationIncome: Renda
+* CoapplicationIncome: Renda familiar
+* Loan Amount: Quantidade do empréstimo (em milhares)
+* Credit_History: Se a pessoa possui empréstimos passados
+* Loan_Amount_Term: Tempo para quitação da dívida (em dias)
+
+Intuitivamente podemos pensar que se queremos saber se um determinado cliente irá quitar ou não a dívida de seu empréstimo essas variáveis parecem fazer todo o sentido.
+
+# O Algoritmo De Boruta
+
+  * Tenta selecionar as variáveis importantes do conjunto de dados que discriminam a variável resposta.
+  * Então ele treina um classificador no conjunto de dados. 
+  * Faz um rank da importância da variável com base em um score. 
+  
+  
+```{r fig.width=15, fig.height=6,message=FALSE,warning=FALSE}
+set.seed(2510)
+boruta.imp <- Boruta(LoanAmount ~ ., data=df[,-1], doTrace=2)  # perform Boruta search
+```
+
+```{r select-cols-int}
+cols.imp <- names(boruta.imp$finalDecision[boruta.imp$finalDecision %in% c("Confirmed", "Tentative")])  # collect
+```
+
+## Plot da importância da variável
+
+```{r fig.width=15, fig.height=6}
+plot(boruta.imp, cex.axis=.5, las=2,srt=45 ,xlab="", main="Variable Importance")
+```
+
+Lendo o Dicionário de dados
+
+```{r}
+dic = read_xlsx('../dados/dicionario_de_dados.xlsx')
+```
+
+Segundo o gráfico acima as variáveis de maior importância para explicar a variável __LoanAmount__, são:
+
+```{r}
+lz<-lapply(1:ncol(boruta.imp$ImpHistory),function(i)
+                  boruta.imp$ImpHistory[is.finite(boruta.imp$ImpHistory[,i]),i])
+
+names(lz) <- colnames(boruta.imp$ImpHistory)
+Labels <- sort(sapply(lz,median), decreasing = T)
+df.rank = data.frame(Importance_Vars = names(Labels), Rank = Labels, row.names = NULL)  
+```
+
+Juntando as informações
+
+```{r}
+inner_join(df.rank,dic,by = 'Importance_Vars' )
+```
+
+Me parece que neste caso a tarefa de determinar o perfil de empréstimo a um determinado cliente é significativamente mais complexa. 
+
+## Output da Analytic Base Table
+
+```{r}
+write.csv(df,'../outputs/df_abt.csv')
+```
+
+
+

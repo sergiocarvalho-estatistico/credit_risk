@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1573009357294.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1266819570",
+    "id" : "1DDA3B89",
+    "lastKnownWriteTime" : 1573009439,
+    "last_content_update" : 1573009439474,
+    "path" : "D:/Documentos/TestesdeEmprego/novolab/aplicacao/creditscore.R",
+    "project_path" : "aplicacao/creditscore.R",
+    "properties" : {
+        "cursorPosition" : "3,0",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 2,
+    "source_on_save" : true,
+    "source_window" : "",
+    "type" : "r_source"
+}

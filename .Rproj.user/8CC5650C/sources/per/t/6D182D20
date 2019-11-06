@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1573009355208.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2209135648",
+    "id" : "6D182D20",
+    "lastKnownWriteTime" : 1573009424,
+    "last_content_update" : 1573009424843,
+    "path" : "D:/Documentos/TestesdeEmprego/novolab/aplicacao/aplicacao.R",
+    "project_path" : "aplicacao/aplicacao.R",
+    "properties" : {
+        "cursorPosition" : "3,17",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : true,
+    "source_window" : "",
+    "type" : "r_source"
+}
