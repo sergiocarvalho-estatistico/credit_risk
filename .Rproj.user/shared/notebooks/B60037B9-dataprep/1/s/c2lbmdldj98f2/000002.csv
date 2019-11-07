@@ -1,0 +1,5 @@
+"0","set.seed(2510)"
+"0","boruta.imp <- Boruta(LoanAmount ~ ., data=df[,-1], doTrace=2)  # perform Boruta search"
+"2","Error in Boruta(LoanAmount ~ ., data = df[, -1], doTrace = 2) : 
+  could not find function ""Boruta""
+"

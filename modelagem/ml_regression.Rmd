@@ -29,12 +29,6 @@ body{text-align: justify;}
 ```
 
 
-```{r echo=FALSE}
-# "default", "tango", "pygments", "kate", "monochrome", 
-# "espresso", "zenburn", "haddock", and "textmate
-```
-
-
 ```{r options-chunk, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, 
                       eval = TRUE, 
@@ -45,8 +39,8 @@ knitr::opts_chunk$set(echo = TRUE,
 ```
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE, include=F}
-source('../funcoes.R')
-source('../pacotes.R')
+source('../pacote_e_funcoes/funcoes.R')
+source('../pacote_e_funcoes/pacotes.R')
 ```
 
 

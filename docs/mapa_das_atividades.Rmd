@@ -1,5 +1,6 @@
 ---
 title: "Concessão de Crédito"
+subtitle: 'Mapa das Atividades'
 author: "Sérgio Carvalho"
 date: "`r format(Sys.Date(), '%d %B, %Y')`"
 output:
@@ -27,10 +28,6 @@ div.sourceCode, pre.sourceCode{
 body{text-align: justify;}
 ```
 
-```{r echo=FALSE}
-# "default", "tango", "pygments", "kate", "monochrome", 
-# "espresso", "zenburn", "haddock", and "textmate
-```
 
 ```{r options-chunk, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, 
@@ -41,15 +38,10 @@ knitr::opts_chunk$set(echo = TRUE,
                       fig.path = "figures/")
 ```
 
-```{r pacotes-selecionados, message=FALSE, warning=FALSE, include=F}
 
-  suppressMessages(library(MASS))
-  suppressMessages(library(tidyverse))
-  suppressMessages(library(readr))
-  suppressMessages(library(dplyr))
-  suppressMessages(library(data.table))
-  suppressMessages(library(readxl))
-
+```{r echo=FALSE, message=FALSE, warning=FALSE, include=F}
+source('../pacote_e_funcoes/funcoes.R')
+source('../pacote_e_funcoes/pacotes.R')
 ```
 
 # Reunião de Alinhamento  
@@ -81,11 +73,6 @@ df <- data.table::fread('../dados/dataset.csv',
             data.frame(stringsAsFactors = F)
 df
 ```
-
-```{r}
-str(df[,vars])
-```
-
 
 
 ## Dicionário de dados

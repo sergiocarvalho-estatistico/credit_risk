@@ -1,0 +1,2 @@
+"0","rbind(""df"" = summary(df$LoanAmount),"
+"0","      ""df.missing"" = summary(df[is.na(df$Credit_History),'LoanAmount'])) %>% data.frame()"

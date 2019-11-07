@@ -1,0 +1,4 @@
+"0","df[,unlist(lapply(df,is.character))] = df[,unlist(lapply(df,is.character))] %>%"
+"0","                                                         apply(2,as.factor) %>% "
+"0","                                                         data.frame()"
+"0","df %>% head()"

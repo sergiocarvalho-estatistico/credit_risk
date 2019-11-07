@@ -1,0 +1,6 @@
+"0","f.pred <- function(fac,df.var,rf.model,var){ "
+"0","  new.df <- df.var[is.na(df.var[,var]),!(names(df.var) %in% var)]"
+"0","  pred_rf <- predict(rf.model, newdata =  new.df)"
+"0","  fac[is.na(fac[,var]),var] <- pred_rf"
+"0","  return(fac)"
+"0","}"

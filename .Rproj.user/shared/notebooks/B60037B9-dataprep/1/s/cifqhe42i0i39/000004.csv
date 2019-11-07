@@ -1,0 +1,3 @@
+"0","rbind(""df"" = summary(df$LoanAmount),"
+"0","      ""Loan_Amount_Term_Missing"" = summary(df[is.na(df$Loan_Amount_Term),'LoanAmount'])) %>% data.frame()"
+"2","number of columns of result is not a multiple of vector length (arg 2)"

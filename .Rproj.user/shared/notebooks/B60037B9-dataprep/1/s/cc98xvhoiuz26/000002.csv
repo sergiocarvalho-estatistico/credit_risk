@@ -1,0 +1,8 @@
+"0","knitr::opts_chunk$set(echo = TRUE, "
+"0","                      eval = TRUE, "
+"0","                      message = FALSE,"
+"0","                      warning = FALSE, "
+"0","                      include = TRUE,"
+"0","                      fig.path = ""figures/"","
+"0","                      fig.width = 15, "
+"0","                      fig.height = 6)"
