@@ -27,7 +27,7 @@ Problemas na base de dados com dados missing para as seguintes variáveis:
 
 <p align="center">
    
-|    __ Variável__       | __Tipo__ |__Qtde Missing__ |
+|    __Variável__        | __Tipo__ |__Qtde Missing__ |
 |:----------------------:|:--------:|:---------------:|
 |  __Gender__            | caracter |      13         |
 |  __Married__           | caracter |      03         |
