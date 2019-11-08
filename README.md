@@ -1,6 +1,6 @@
 # Instale o R-project e RStudio
 
-* [R-CRAN](nhttps://cran.r-project.org/mirrors.html)
+* [R Project for Statistical Computing](https://www.r-project.org/)
 * [RStudio](https://rstudio.com/products/rstudio/download/)
 
 # Download do github
