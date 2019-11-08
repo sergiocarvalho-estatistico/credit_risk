@@ -1,23 +1,23 @@
 # Instalação dos Pacotes
 
-* Na pasta pacote_e_funcoes
+* Na pasta __pacote_e_funcoes__
 
-      * Execute o arquivo instalarpacotes.R
+    * Execute o arquivo instalarpacotes.R
 
 # Leitura e execução dos códigos
 
 Os documentos e códigos devem ser lidos e executados na seguinte ordem:
 
-* Pasta docs
+* Pasta __docs__
     * mapa_das_atividades.html
     * mapa_das_atividades.Rmd
-* Pasta dataexplorer
+* Pasta __dataexplorer__
     * dataprep.html
     * dataprep.Rmd        
-* Pasta modelagem
+* Pasta __modelagem__
     * ml_classification.html
     * ml_classification.Rmd        
-* Pasta modelagem
+* Pasta __modelagem__
     * ml_regression.html
     * ml_regression.Rmd
 
@@ -25,7 +25,7 @@ Os documentos e códigos devem ser lidos e executados na seguinte ordem:
 
 Problemas na base de dados com dados missing para as seguintes variáveis:
 
-<center>
+<p align="center">
 
 |       Variável     |   Tipo   |   Qtde Missing  |
 |:------------------:|:--------:|:---------------:|
@@ -37,14 +37,14 @@ Problemas na base de dados com dados missing para as seguintes variáveis:
 |  Loan_Amount_Term  | Integer  |      14         |
 |  LoanAmount  	 | Integer  |      22	     |   	
 
-</center>  
+</p>  
 
 Além disso a variável __Credit_History__ que tem a característíca de uma variável categórico, no entanto, o seu tipo de dado estava como integer.
 
 
 # Aplicação da Serialização/API
 
-Pasta aplicacao_docker
+Pasta __aplicacao_docker__
 
 * Abra e execute o arquivo start_api.R
 * Vá até o seu browser e digite: http://127.0.0.1:8000/__swagger__/
@@ -57,11 +57,16 @@ Pasta aplicacao_docker
 
 * Você irá clicar em:  
 
-![get prediction](imagens/get_pred.png)
+<p align="center">
+  <img src="https://github.com/sergiocarvalho-estatistico/credit_risk/blob/master/imagens/get_pred.PNG" width="900" title="Primeira Tela" alt="accessibility text">
+</p>
 
 * Em seguida click em: Try it out
 
-![Try out](imagens/try.png)
+<p align="center">
+  <img src="https://github.com/sergiocarvalho-estatistico/credit_risk/blob/master/imagens/try.PNG" width="900" title="Primeira Tela" alt="accessibility text">
+</p>
+
 
 * Entre com os seguintes dados de exemplo:
 
@@ -77,25 +82,30 @@ Pasta aplicacao_docker
 <br>
 
 * Click em Execute:
-![Execute](imagens/execute.png)
+
+<p align="center">
+  <img src="https://github.com/sergiocarvalho-estatistico/credit_risk/blob/master/imagens/execute.PNG" width="900" title="Execute" alt="accessibility text">
+</p>
 
 Para ver os dados no banco de dados click em: 
-![Post](imagens/post_pred.png)
 
+<p align="center">
+  <img src="https://github.com/sergiocarvalho-estatistico/credit_risk/blob/master/imagens/post_pred.PNG" width="900" title="Post" alt="accessibility text">
+</p>
 
 # Aplicação Docker Local
 
 Para rodar a aplicação docker faça o seguinte:
 
   * Em seu computador crie uma pasta com nome tmp em:
-      * $\text{C:\Users\UserName>kmdir tmp}$
+      * C:\Users\UserName>kmdir tmp
       * Copie o conteúdo da pasta __aplicacao_docker__ para a pasta tmp
       * Via prompt excute a seguinte linha de commando:
-        * $\text{C:\Users\UserName>cd tmp}$
-        * $\text{C:\Users\UserName\tmp>docker build -t credit_risk .}$
+        * C:\Users\UserName>cd tmp
+        * C:\Users\UserName\tmp>docker build -t credit_risk .
         * Após digitar o comando acima aguarde a instalação dos requisitos em seu sistema.
         * Uma fez finalizada a instalação digite:
-        * $\text{C:\Users\UserName\tmp>docker run --rm -p 8000:8000 credit_risk}$  
+        * C:\Users\UserName\tmp>docker run --rm -p 8000:8000 credit_risk  
     
     
         
