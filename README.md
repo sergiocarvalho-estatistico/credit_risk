@@ -27,15 +27,15 @@ Problemas na base de dados com dados missing para as seguintes variáveis:
 
 <p align="center">
    
-                                 |       Variável     |   Tipo   |   Qtde Missing  |
-                                 |:------------------:|:--------:|:---------------:|
-                                 |  Gender            | caracter |      13         |
-                                 |  Married           | caracter |      03         |
-                                 |  Dependents        | caracter |      15         |
-                                 |  Self_Employed     | caracter |      32         |
-                                 |  Credit_History    | Integer  |      50         |
-                                 |  Loan_Amount_Term  | Integer  |      14         |
-                                 |  LoanAmount  	   | Integer  |      22	        |   	
+|    __ Variável__       | __Tipo__ |__Qtde Missing__ |
+|:----------------------:|:--------:|:---------------:|
+|  __Gender__            | caracter |      13         |
+|  __Married__           | caracter |      03         |
+|  __Dependents__        | caracter |      15         |
+|  __Self_Employed__     | caracter |      32         |
+|  __Credit_History__    | Integer  |      50         |
+|  __Loan_Amount_Term__  | Integer  |      14         |
+|  __LoanAmount__  	    | Integer  |      22	      |   	
 
 </p>  
 
