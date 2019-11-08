@@ -35,7 +35,7 @@ Problemas na base de dados com dados missing para as seguintes variáveis:
 |  Self_Employed     | caracter |      32         |
 |  Credit_History    | Integer  |      50         |
 |  Loan_Amount_Term  | Integer  |      14         |
-|  LoanAmount  	     | Integer  |      22	        |   	
+|  LoanAmount  	 | Integer  |      22	     |   	
 
 </center>  
 
@@ -50,12 +50,19 @@ Pasta aplicacao_docker
 * Vá até o seu browser e digite: http://127.0.0.1:8000/__swagger__/
 
 * Irá aparecer a seguinte tela:
-![primeira tela](imagens/tela1.png?raw=true "Title")
+
+![primeira tela](imagens/tela1.png?raw=true "Primeira tela")
+
+<p align="center">
+  <img src="imagens/tela1.png" width="350" title="Primeira Tela" width="350" alt="accessibility text">
+</p>
 
 * Você irá clicar em:  
+
 ![get prediction](imagens/get_pred.png)
 
 * Em seguida click em: Try it out
+
 ![Try out](imagens/try.png)
 
 * Entre com os seguintes dados de exemplo:
