@@ -1,3 +1,14 @@
+# Instale o R-project e RStudio
+
+* [R-CRAN](nhttps://cran.r-project.org/mirrors.html)
+* [RStudio](https://rstudio.com/products/rstudio/download/)
+
+# Download do github
+
+Após fazer o download da pasta __cridit_risk__ do github, abra a pasta e dê um click duplo em:
+
+* onovolab.Rproj
+
 # Instalação dos Pacotes
 
 * Na pasta __pacote_e_funcoes__
