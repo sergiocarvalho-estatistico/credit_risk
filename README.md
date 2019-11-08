@@ -26,7 +26,6 @@ Os documentos e códigos devem ser lidos e executados na seguinte ordem:
 Problemas na base de dados com dados missing para as seguintes variáveis:
 
 <p align="center">
-
 |       Variável     |   Tipo   |   Qtde Missing  |
 |:------------------:|:--------:|:---------------:|
 |  Gender            | caracter |      13         |
@@ -35,8 +34,7 @@ Problemas na base de dados com dados missing para as seguintes variáveis:
 |  Self_Employed     | caracter |      32         |
 |  Credit_History    | Integer  |      50         |
 |  Loan_Amount_Term  | Integer  |      14         |
-|  LoanAmount  	 | Integer  |      22	     |   	
-
+|  LoanAmount  	   | Integer  |      22	        |   	
 </p>  
 
 Além disso a variável __Credit_History__ que tem a característíca de uma variável categórico, no entanto, o seu tipo de dado estava como integer.
