@@ -51,10 +51,8 @@ Pasta aplicacao_docker
 
 * Irá aparecer a seguinte tela:
 
-![primeira tela](/imagens/tela1.png?raw=true "Primeira tela")
-
 <p align="center">
-  <img src="https://github.com/sergiocarvalho-estatistico/credit_risk/blob/master/imagens/tela1.PNG" width="350" title="Primeira Tela" width="350" alt="accessibility text">
+  <img src="https://github.com/sergiocarvalho-estatistico/credit_risk/blob/master/imagens/tela1.PNG" width="700" title="Primeira Tela" alt="accessibility text">
 </p>
 
 * Você irá clicar em:  
