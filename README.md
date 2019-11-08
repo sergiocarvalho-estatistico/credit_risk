@@ -50,7 +50,7 @@ Pasta aplicacao_docker
 * Vá até o seu browser e digite: http://127.0.0.1:8000/__swagger__/
 
 * Irá aparecer a seguinte tela:
-![primeira tela](imagens/tela1.png)
+![primeira tela](imagens/tela1.png?raw=true "Title")
 
 * Você irá clicar em:  
 ![get prediction](imagens/get_pred.png)
