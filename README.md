@@ -54,7 +54,7 @@ Pasta aplicacao_docker
 ![primeira tela](imagens/tela1.png?raw=true "Primeira tela")
 
 <p align="center">
-  <img src="imagens/tela1.png" width="350" title="Primeira Tela" width="350" alt="accessibility text">
+  <img src="../imagens/tela1.png" width="350" title="Primeira Tela" width="350" alt="accessibility text">
 </p>
 
 * Você irá clicar em:  
