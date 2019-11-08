@@ -52,7 +52,7 @@ Pasta aplicacao_docker
 * Irá aparecer a seguinte tela:
 
 <p align="center">
-  <img src="https://github.com/sergiocarvalho-estatistico/credit_risk/blob/master/imagens/tela1.PNG" width="700" title="Primeira Tela" alt="accessibility text">
+  <img src="https://github.com/sergiocarvalho-estatistico/credit_risk/blob/master/imagens/tela1.PNG" width="1000" title="Primeira Tela" alt="accessibility text">
 </p>
 
 * Você irá clicar em:  
