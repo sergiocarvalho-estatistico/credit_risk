@@ -83,12 +83,12 @@ Pasta __aplicacao_docker__
 
   * Property_Area = Urban
   * Credit_History = 1
-  * Loan_Amount_Term = 5900  
+  * Loan_Amount_Term = 360  
   * CoapplicantIncome = 0
-  * ApplicantIncome = 360
-  * LoanAmount = 4500
+  * ApplicantIncome = 2500
+  * LoanAmount = 120
   * Education = Graduate
-  * Married = No
+  * Married = Yes
 
 <br>
 
