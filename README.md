@@ -8,7 +8,7 @@
 
 Após fazer o download da pasta __cridit_risk__ do github, abra a pasta e dê um click duplo em:
 
-* onovolab.Rproj
+* credit_risk.Rproj
 
 # Instalação dos Pacotes
 
