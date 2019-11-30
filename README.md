@@ -2,6 +2,7 @@
 
 * [R Project for Statistical Computing](https://www.r-project.org/)
 * [RStudio](https://rstudio.com/products/rstudio/download/)
+* [Mongodb](https://www.mongodb.com/) 
 
 # Download do github
 
