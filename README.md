@@ -6,7 +6,7 @@
 
 # Download do github
 
-Após fazer o download da pasta __cridit_risk__ do github, abra a pasta e dê um click duplo em:
+Após fazer o download da pasta __credit_risk__ do github, abra a pasta e dê um click duplo em:
 
 * credit_risk.Rproj
 
