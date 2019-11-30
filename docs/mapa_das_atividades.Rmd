@@ -48,7 +48,7 @@ source('../pacote_e_funcoes/pacotes.R')
 
 ## Participantes
 
-* [Lídia Camargo](https://www.linkedin.com/in/lidia-camargo-78a6265a/) 
+* Lídia Camargo 
 * [Sérgio Carvalho](https://sergiocarvalho-estatistico.github.io/)
 
 

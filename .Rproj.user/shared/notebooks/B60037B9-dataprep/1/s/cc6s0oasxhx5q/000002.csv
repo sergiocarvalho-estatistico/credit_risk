@@ -1,1 +1,0 @@
-"0","df.Loan_Amount_Term <- df %>% select(-Credit_History,-LoanAmount)"

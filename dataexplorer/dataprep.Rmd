@@ -171,19 +171,21 @@ df %>% head()
 
 ## Resumo das Informações 
 
-```{r resumo-dos-dados}
-skimr::skim_to_wide(df)
+```{r resumo-dos-dados, message=FALSE}
+suppressWarnings(skimr::skim_to_wide(df))
 ```
 
 Notem que há valores missing presente nas seguintes variáveis:
 
 <center>
 
+
 |       Variável     |   Tipo   |   Qtde Missing  |
 |:------------------:|:--------:|:---------------:|
 |  Credit_History    | Integer  |      50         |
 |  Loan_Amount_Term  | Integer  |      14         |
 |  LoanAmount  	     | Integer  |      22	        |   	
+
 
 </center>
 

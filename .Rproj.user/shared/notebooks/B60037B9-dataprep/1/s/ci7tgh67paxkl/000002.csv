@@ -1,4 +1,0 @@
-"0","df$Gender[df$Gender == """"] = 'vnd'"
-"0","df$Married[df$Married == """"] = 'vnd'"
-"0","df$Dependents[df$Dependents == """"] = 'vnd'"
-"0","df$Self_Employed[df$Self_Employed == """"] = 'vnd'"

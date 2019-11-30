@@ -1,4 +1,0 @@
-"0","df <- data.table::fread('../dados/dataset.csv', "
-"0","                             sep="","", "
-"0","                             showProgress = FALSE)  %>% "
-"0","            data.frame(stringsAsFactors = F)"
