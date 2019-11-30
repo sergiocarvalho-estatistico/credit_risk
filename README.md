@@ -1,4 +1,4 @@
-# Instale o R-Project e RStudio
+# Instale os Softwares   
 
 * [R Project for Statistical Computing](https://www.r-project.org/)
 * [RStudio](https://rstudio.com/products/rstudio/download/)
