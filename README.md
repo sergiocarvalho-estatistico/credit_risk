@@ -110,7 +110,7 @@ Para ver os dados no banco de dados click em:
 Para rodar a aplicação docker faça o seguinte:
 
   * Em seu computador crie uma pasta com nome tmp em:
-      * C:\Users\UserName>kmdir tmp
+      * C:\Users\UserName>mkdir tmp
       * Copie o conteúdo da pasta __aplicacao_docker__ para a pasta tmp
       * Via prompt excute a seguinte linha de commando:
         * C:\Users\UserName>cd tmp
