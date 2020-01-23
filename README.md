@@ -4,7 +4,7 @@
 * [RStudio](https://rstudio.com/products/rstudio/download/)
 * [Mongodb](https://www.mongodb.com/) 
 
-# Download do github
+# Faça o download do projeto
 
 Após fazer o download da pasta __credit_risk__ do github, abra a pasta e dê um click duplo em:
 
